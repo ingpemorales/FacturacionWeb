@@ -1,0 +1,301 @@
+﻿@model FacturaMVC.Models.FacturaViewModel
+
+@{
+	ViewData["Title"] = "Create";
+}
+
+<form id="formFactura" asp-action="Create">
+<div class="row">
+	<div class="col">
+		<h4>Factura </h4>
+	</div>
+	<div class="col">
+		<h5>Fecha: @DateTime.Now.Date.ToShortDateString()</h5>
+	</div>
+
+</div>
+
+<hr />
+<div class="row">
+	<div class="col-md-12">
+		
+			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+			<div class="row">				
+				<div class="col-md-4">
+					<label asp-for="factura.Cliente" class="control-label"></label>
+					<input asp-for="factura.Cliente" class="form-control" value="Pedro Morales" />
+					<span asp-validation-for="factura.Cliente" class="text-danger"></span>
+				</div>
+				<div class="col-md-2">
+					<label asp-for="factura.PorcentajeImpuesto" class="control-label">% Impuesto</label>
+					<input asp-for="factura.PorcentajeImpuesto" class="form-control" value="15" />
+					<span asp-validation-for="factura.PorcentajeImpuesto" class="text-danger"></span>
+				</div>
+				
+				<div class="col-md-2">
+					<input type="submit" value="Guardar Factura" class="btn btn-primary" style="margin-top:32px"/>
+				</div>
+			</div>
+
+		
+	</div>
+</div>
+<hr />
+<div class="row">
+	<div class="col-md-1">
+		<label class="control-label">Cod. art.</label>
+		<input id="CodigoArticulo" name="CodigoArticulo" class="form-control goCalculo" />
+		
+	</div>
+	<div class="col-md-1">
+		<label class="control-label">Cantidad</label>
+		<input id="CantidadLinea" type="number" class="form-control goCalculo" value="1" />
+	</div>
+	<div class="col-md-3">
+		<label  class="control-label">Nombre articulo</label>
+		<input  id="NombreArticulo" class="form-control" disabled />
+		
+	</div>
+	
+	<div class="col-md-1">
+		<label  class="control-label">Precio</label>
+		<input id="PrecioLinea" name="PrecioLinea" class="form-control" disabled />		
+	</div>
+	<div class="col-md-2">
+		<label class="control-label">Impuesto Linea</label>
+		<input id="ImpuestoLinea" name="ImpuestoLinea" class="form-control" disabled/>
+	</div>
+	<div class="col-md-2">
+		<label  class="control-label">Total Linea</label>
+		<input id="TotalLinea" name="TotalLinea" class="form-control" disabled />
+	</div>
+	
+	<div class="col-md-2">
+		<input id="AddLinea" name="AddLinea" type="button" value="Agregar Linea" class="btn btn-success" style="margin-top:32px" />
+	</div>
+</div>
+<hr />
+<div class="row">
+	<div class="col-md-10">
+	<table id="tbDetalle" class="table table-sm table-dark">
+	<thead>
+		<tr>
+			<th>
+				Cantidad
+			</th>
+			<th>
+				Articulo
+			</th>
+			<th>
+				Precio
+			</th>
+			<th>
+				Impuesto
+			</th>
+			<th>
+				Total
+			</th>
+			
+			<th>
+				Borrar
+			</th>
+			
+		</tr>
+	</thead>
+	<tbody>
+					<input type="hidden" id="facturaDetalle_0__IdArticulo" name="facturaDetalle[0].IdArticulo" value="0"  />
+					<input type="hidden" id="facturaDetalle_0__Cantidad" name="facturaDetalle[0].Cantidad"  value="0"/>
+					<input type ="hidden" id="facturaDetalle_0__PrecioVenta" name="facturaDetalle[0].PrecioVenta" value="0" />
+					
+					<input type="hidden" id="facturaDetalle_0__SubTotal" name="facturaDetalle[0].SubTotal" value="0" />
+					<input type="hidden" id="facturaDetalle_0__Impuesto" name="facturaDetalle[0].Impuesto" value="0" />
+					
+					@*<tr class="hide">
+				<td>
+					1
+				</td>
+				<td>
+					Nombre Articulo
+				</td>
+				<td>
+					1
+				</td>
+				<td>
+					1
+				</td>
+				<td>
+					1
+				</td>
+				<td>
+					x
+				</td>				
+			</tr>*@
+		
+	</tbody>
+</table>
+</div>
+<div class="col-md-2">
+	<h6>Totales Factura</h6>
+	<hr />
+	<div class="row">
+		<div class="form-group">
+			<label asp-for="factura.Subtotal" class="control-label"></label>
+			<input asp-for="factura.Subtotal" class="form-control text-right font-weight-bold" disabled />
+			<span asp-validation-for="factura.Subtotal" class="text-danger"></span>
+		</div>
+			<div class="form-group">
+			<label asp-for="factura.Impuesto" class="control-label"></label>
+					<input asp-for="factura.Impuesto" class="form-control text-right font-weight-bold" disabled />
+			<span asp-validation-for="factura.Impuesto" class="text-danger"></span>
+		</div>
+			<div class="form-group">
+			<label asp-for="factura.Total" class="control-label"></label>
+					<input asp-for="factura.Total" class="form-control text-right font-weight-bold" disabled />
+			<span asp-validation-for="factura.Total" class="text-danger"></span>								
+		</div>
+	</div>
+</div>
+</div>
+</form>
+
+
+
+
+
+<div>
+	<a class="btn btn-danger" asp-action="Index">Cancelar</a>
+</div>
+
+@section Scripts {
+	@{
+		
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+		<script>
+			var _urlBuscarArticulo = '@Url.Action("BuscarArticulo", "Articulo")';
+			var contadorFila=0;
+
+			$('#formFactura').on('keyup keypress', function (e) {
+				var keyCode = e.keyCode || e.which;
+				if (keyCode === 13) {					
+					e.preventDefault();					
+					return false;
+				}
+			});
+
+			$(".goCalculo").on("keypress",
+				function (e) {
+
+					if (e.which == 13) {
+						console.log(_urlBuscarArticulo);
+						$.ajax({
+							url: _urlBuscarArticulo,
+							data: {
+								id: $("#CodigoArticulo").val()
+							},
+							async: true,
+							type: "GET",
+							success: function (r) {
+								
+								$("#NombreArticulo").val(r.results.descripcion);
+								$("#PrecioLinea").val(r.results.precio);
+								CalculaImpuestoLinea();
+								CalculaTotalLinea();
+
+							},
+							error: function (xhr, status, err) {
+								alert(err)								
+							}
+						})
+					}
+				});
+
+			//$("#CantidadLinea").on("keypress",
+			//	function (e) {
+
+			//		if (e.which == 13) {
+			//			CalculaImpuestoLinea();
+			//			CalculaTotalLinea();						
+			//		}
+			//	});
+
+
+			$("#AddLinea").on("click",
+				function () {
+					contadorFila+=1;
+					var cadenaLinea = ConcatenarFila();					
+					$("#tbDetalle > tbody").append("<tr>"+cadenaLinea+"</tr>");
+					CalculaTotales();
+				});
+
+			$("#tbDetalle").on("click", ".borrarLinea", function () {
+				$(this).closest("tr").remove();
+				CalculaTotales();
+			});
+
+			CalculaImpuestoLinea=function(){
+				$("#ImpuestoLinea").val(
+					parseFloat(
+						parseFloat($("#PrecioLinea").val()) *
+					(parseFloat($("#factura_PorcentajeImpuesto").val()) / 100) *
+					parseFloat($("#CantidadLinea").val())
+					).toFixed(2)
+				);
+			}
+
+			CalculaTotalLinea=function(){
+				$("#TotalLinea").val(
+					parseFloat($("#ImpuestoLinea").val()) +
+					(
+						parseFloat($("#CantidadLinea").val()) *
+						parseFloat($("#PrecioLinea").val())
+					)
+
+				);
+			}
+
+			CalculaTotales=function(){
+				var sumSubtotal = 0;
+				var sumImpuesto=0;
+				
+				$('.grupoSubtotal').each(function () {
+					sumSubtotal += Number($(this).val());
+				});
+				$('.grupoImpuesto').each(function () {
+					sumImpuesto +=  Number($(this).val());
+				});
+				
+				$("#factura_Subtotal").val(parseFloat( sumSubtotal).toFixed(2));
+				$("#factura_Impuesto").val( parseFloat( sumImpuesto).toFixed(2));
+				$("#factura_Total").val(sumSubtotal+ sumImpuesto);
+
+			}
+
+			ConcatenarFila=function(){
+
+				var subTotalLinea = parseFloat($("#CantidadLinea").val()) * parseFloat($("#PrecioLinea").val());
+
+				var strIdArticulo = "<input type='hidden' id='facturaDetalle_" + contadorFila + "__IdArticulo' name= 'facturaDetalle[" + contadorFila + "].IdArticulo' value='" + $('#CodigoArticulo').val() + "' />";
+				var strCantidad = "<input type='hidden' id='facturaDetalle_" + contadorFila + "__Cantidad' name= 'facturaDetalle[" + contadorFila + "].Cantidad' value='" + $('#CantidadLinea').val() + "' />";
+				var strPrecioVenta = "<input type='hidden' id='facturaDetalle_" + contadorFila + "__PrecioVenta' name= 'facturaDetalle[" + contadorFila + "].PrecioVenta' value='" + $('#PrecioLinea').val() + "' />";
+				var strSubTotal = "<input type='hidden' class='grupoSubtotal' id='facturaDetalle_" + contadorFila + "__SubTotal' name= 'facturaDetalle[" + contadorFila + "].SubTotal' value='" + subTotalLinea + "' />";
+				var strImpuesto = "<input type='hidden' class='grupoImpuesto' id='facturaDetalle_" + contadorFila + "__Impuesto' name= 'facturaDetalle[" + contadorFila + "].Impuesto' value='" + $('#ImpuestoLinea').val() + "' />";
+
+				var cadenaInput = strIdArticulo + strCantidad + strPrecioVenta + strSubTotal + strImpuesto;
+
+				var cadenaFila = "<td>" + cadenaInput; 
+				cadenaFila = cadenaFila + $("#CantidadLinea").val() + "</td>";
+				cadenaFila = cadenaFila + "<td>"+$("#NombreArticulo").val()+ "</td>";
+				cadenaFila = cadenaFila + "<td>"+$("#PrecioLinea").val() +"</td>";
+				cadenaFila = cadenaFila + "<td>"+$("#ImpuestoLinea").val()+"</td>";
+				cadenaFila = cadenaFila + "<td>"+$("#TotalLinea").val()+"</td>";
+				cadenaFila = cadenaFila + "<td>" + "<input  type = 'button' value = 'Borrar' class='btn btn-sm btn-danger borrarLinea' />" + "</td>";
+
+				return cadenaFila;
+					
+			}
+
+
+		</script>
+	}
+}
+

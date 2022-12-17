@@ -1,0 +1,95 @@
+﻿@{
+	ViewData["Title"] = "Buscar";
+}
+<h6>Buscar por montos</h6>
+<hr />
+<div class="row">
+	<div class="col-md-3">
+		<label class="control-label">Monto Desde</label>
+		<input id="montoinicial" name="montoinicial" type="number" class="form-control" />
+	</div>
+	<div class="col-md-3">
+		<label class="control-label">Monto Hasta</label>
+		<input id="montofinal" name="montofinal" type="number" class="form-control" />
+	</div>
+	<div class="col-md-2">
+		<input type="button" id="btnBuscarMonto" value="Buscar " class="btn btn-primary" style="margin-top:32px" />
+	</div>
+</div>
+<h6>Buscar por cliente</h6>
+<hr />
+<div class="row">
+	<div class="col-md-4">
+		<label class="control-label">Nombre cliente</label>
+		<input id="cliente" name="cliente" class="form-control" />
+	</div>
+	<div class="col-md-2">
+		<input type="button" id="btnBuscarCliente" value="Buscar " class="btn btn-primary" style="margin-top:32px" />
+	</div>
+</div>
+
+<div id="liFacturas">
+	
+</div>
+
+@section Scripts {
+	@{
+		<script>
+			var _urlBuscarFactura= '@Url.Action("ListaPorMonto", "Factura")';
+
+			$("#btnBuscarCliente").on("click",
+				function () {
+					$.ajax({
+						url: '@Url.Action("ListaPorCliente", "Factura")',
+						data: {
+							nombreCliente: $("#cliente").val()
+						},
+						async: true,
+						type: "GET",
+						success: function (r) {
+							console.log(r)
+							$("#liFacturas").html("");
+							$("#liFacturas").html(r);
+
+						},
+						error: function (xhr, status, err) {
+							alert(err)
+						}
+					})
+					//$("#liFacturas").load("")
+					//$("#liFacturas").load("ListaPorCliente", { nombreCliente: $("#cliente").val() })
+				});
+
+			$("#btnBuscarMonto").on("click",
+				function () {
+					$.ajax({
+						url: _urlBuscarFactura,
+							data: {
+							montoMenor: $("#montoinicial").val(),
+							montoMayor: $("#montofinal").val()
+							},
+							async: true,
+							type: "GET",
+							success: function (r) {
+								console.log(r)
+							$("#liFacturas").html("");
+							$("#liFacturas").html(r);
+
+							},
+							error: function (xhr, status, err) {
+								alert(err)								
+							}
+						})
+
+
+					
+				});
+
+			$("#textNoData").load("no-file.txt", function (response, status, xhr) {
+				if (status == "error")
+					$("#textNoData").html("Error: " + xhr.status + ": " + xhr.statusText);
+			});
+		</script>
+	}
+}
+

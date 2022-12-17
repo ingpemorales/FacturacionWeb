@@ -1,0 +1,58 @@
+﻿@model IEnumerable<FacturaMVC.Models.Articulo>
+
+@{
+    ViewData["Title"] = "CRUD Articulos";
+}
+
+<h1>Mantenimiento Articulos</h1>
+
+<p>
+    <a asp-action="Create">Agregar Articulo</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.IdArticulo)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Descripcion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Costo)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Precio)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Activo)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdArticulo)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Descripcion)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Costo)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Precio)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Activo)
+            </td>
+            <td>
+                @Html.ActionLink("Editar", "Edit", new {  id=item.IdArticulo }) |                
+                    @Html.ActionLink("Inactivar", "Delete", new { id=item.IdArticulo  })
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
